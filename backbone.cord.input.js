@@ -3,11 +3,16 @@
 
 var Backbone = root.Backbone;
 
+// Cache the event values to return on getValue because math expressions will use the getValueForKey method
+root._inputscope = root._inputscope || {};
+
 var SCOPE_NAME = 'inputscope';
 var CURSOR_X = 'cursorX';
 var CURSOR_Y = 'cursorY';
 
 function _cursorListener(e) {
+	root._inputscope[CURSOR_X] = e.clientX;
+	root._inputscope[CURSOR_Y] = e.clientY;
 	this._invokeObservers(CURSOR_X, e.clientX, SCOPE_NAME);
 	this._invokeObservers(CURSOR_Y, e.clientY, SCOPE_NAME);
 }
@@ -42,8 +47,8 @@ Backbone.Cord.plugins.push({
 					break;
 			}
 		},
-		getValue: function() {
-			return 0;
+		getValue: function(key) {
+			return root._inputscope[key] || 0;
 		},
 		setValue: function() {}
 	},
