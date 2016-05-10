@@ -1,7 +1,7 @@
 ;(function(root) {
 'use strict';
 
-var Backbone = root.Backbone;
+var Backbone = root.Backbone || require('backbone');
 
 // Cache the event values to return on getValue because math expressions will use the getValueForKey method
 root._inputscope = root._inputscope || {};
