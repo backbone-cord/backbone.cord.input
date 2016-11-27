@@ -6,7 +6,7 @@ var Backbone = root.Backbone || require('backbone');
 // Cache the event values to return on getValue because math expressions will use the getValueForKey method
 root._inputscope = root._inputscope || {};
 
-var SCOPE_NAME = 'inputscope';
+var NAMESPACE = 'input';
 var CURSOR_X = 'cursorX';
 var CURSOR_Y = 'cursorY';
 var SCROLL_X = 'scrollX';
@@ -17,8 +17,8 @@ var WINDOW_HEIGHT = 'windowHeight';
 function _cursorListener(e) {
 	root._inputscope[CURSOR_X] = e.clientX;
 	root._inputscope[CURSOR_Y] = e.clientY;
-	this._invokeObservers(CURSOR_X, e.clientX, SCOPE_NAME);
-	this._invokeObservers(CURSOR_Y, e.clientY, SCOPE_NAME);
+	this._invokeObservers(CURSOR_X, e.clientX, NAMESPACE);
+	this._invokeObservers(CURSOR_Y, e.clientY, NAMESPACE);
 }
 
 // For cross-browser compatibility, use window.pageYOffset instead of window.scrollY.
@@ -40,23 +40,24 @@ function _scrollYOffset(p) {
 function _scrollListener() {
 	root._inputscope[SCROLL_X] = _scrollX();
 	root._inputscope[SCROLL_Y] = _scrollY();
-	this._invokeObservers(SCROLL_X, root._inputscope[SCROLL_X], SCOPE_NAME);
-	this._invokeObservers(SCROLL_Y, root._inputscope[SCROLL_Y], SCOPE_NAME);
+	this._invokeObservers(SCROLL_X, root._inputscope[SCROLL_X], NAMESPACE);
+	this._invokeObservers(SCROLL_Y, root._inputscope[SCROLL_Y], NAMESPACE);
 }
 
 function _resizeListener() {
 	root._inputscope[WINDOW_WIDTH] = window.innerWidth;
 	root._inputscope[WINDOW_HEIGHT] = window.innerHeight;
-	this._invokeObservers(WINDOW_WIDTH, window.innerWidth, SCOPE_NAME);
-	this._invokeObservers(WINDOW_HEIGHT, window.innerHeight, SCOPE_NAME);
+	this._invokeObservers(WINDOW_WIDTH, window.innerWidth, NAMESPACE);
+	this._invokeObservers(WINDOW_HEIGHT, window.innerHeight, NAMESPACE);
 }
 
 Backbone.Cord.plugins.push({
-	name: SCOPE_NAME,
+	name: 'inputscope',
 	config: {
 		inputPrefix: '@'
 	},
 	scope: {
+		namespace: NAMESPACE,
 		getKey: function(key) {
 			if(key.indexOf(Backbone.Cord.config.inputPrefix) === 0)
 				return key.substr(Backbone.Cord.config.inputPrefix.length);
@@ -65,14 +66,14 @@ Backbone.Cord.plugins.push({
 			switch(key) {
 				case CURSOR_X:
 				case CURSOR_Y:
-					if(!Object.keys(this._getObservers(CURSOR_X, SCOPE_NAME)).length && !Object.keys(this._getObservers(CURSOR_Y, SCOPE_NAME)).length) {
+					if(!this._hasObservers(CURSOR_X, NAMESPACE) && !this._hasObservers(CURSOR_Y, NAMESPACE)) {
 						this._cursorListener = _cursorListener.bind(this);
 						window.addEventListener('mousemove', this._cursorListener);
 					}
 					break;
 				case SCROLL_X:
 				case SCROLL_Y:
-					if(!Object.keys(this._getObservers(SCROLL_X, SCOPE_NAME)).length && !Object.keys(this._getObservers(SCROLL_Y, SCOPE_NAME)).length) {
+					if(!this._hasObservers(SCROLL_X, NAMESPACE) && !this._hasObservers(SCROLL_Y, NAMESPACE)) {
 						this._scrollListener = _scrollListener.bind(this);
 						window.addEventListener('scroll', this._scrollListener);
 						// Set the initial values
@@ -82,7 +83,7 @@ Backbone.Cord.plugins.push({
 					break;
 				case WINDOW_WIDTH:
 				case WINDOW_HEIGHT:
-					if(!Object.keys(this._getObservers(WINDOW_WIDTH, SCOPE_NAME)).length && !Object.keys(this._getObservers(WINDOW_HEIGHT, SCOPE_NAME)).length) {
+					if(!this._hasObservers(WINDOW_WIDTH, NAMESPACE) && !this._hasObservers(WINDOW_HEIGHT, NAMESPACE)) {
 						this._resizeListener = _resizeListener.bind(this);
 						window.addEventListener('resize', this._resizeListener);
 						// Set the initial values
@@ -96,17 +97,17 @@ Backbone.Cord.plugins.push({
 			switch(key) {
 				case CURSOR_X:
 				case CURSOR_Y:
-					if(!Object.keys(this._getObservers(CURSOR_X, SCOPE_NAME)).length && !Object.keys(this._getObservers(CURSOR_Y, SCOPE_NAME)).length)
+					if(!this._hasObservers(CURSOR_X, NAMESPACE) && !this._hasObservers(CURSOR_Y, NAMESPACE))
 						window.removeEventListener('mousemove', this._cursorListener);
 					break;
 				case SCROLL_X:
 				case SCROLL_Y:
-					if(!Object.keys(this._getObservers(SCROLL_X, SCOPE_NAME)).length && !Object.keys(this._getObservers(SCROLL_Y, SCOPE_NAME)).length)
+					if(!this._hasObservers(SCROLL_X, NAMESPACE) && !this._hasObservers(SCROLL_Y, NAMESPACE))
 						window.removeEventListener('scroll', this._scrollListener);
 					break;
 				case WINDOW_WIDTH:
 				case WINDOW_HEIGHT:
-					if(!Object.keys(this._getObservers(WINDOW_WIDTH, SCOPE_NAME)).length && !Object.keys(this._getObservers(WINDOW_HEIGHT, SCOPE_NAME)).length)
+					if(!this._hasObservers(WINDOW_WIDTH, NAMESPACE) && !this._hasObservers(WINDOW_HEIGHT, NAMESPACE))
 						window.removeEventListener('resize', this._resizeListener);
 					break;
 			}
