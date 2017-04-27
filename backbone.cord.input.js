@@ -51,76 +51,72 @@ function _resizeListener() {
 	this._invokeObservers(NAMESPACE, WINDOW_HEIGHT, window.innerHeight);
 }
 
-Backbone.Cord.plugins.push({
-	name: 'inputscope',
-	scope: {
-		namespace: NAMESPACE,
-		observe: function(key) {
-			switch(key) {
-				case CURSOR_X:
-				case CURSOR_Y:
-					if(!this._hasObservers(NAMESPACE, CURSOR_X) && !this._hasObservers(NAMESPACE, CURSOR_Y)) {
-						this._cursorListener = _cursorListener.bind(this);
-						window.addEventListener('mousemove', this._cursorListener);
-					}
-					break;
-				case SCROLL_X:
-				case SCROLL_Y:
-					if(!this._hasObservers(NAMESPACE, SCROLL_X) && !this._hasObservers(NAMESPACE, SCROLL_Y)) {
-						this._scrollListener = _scrollListener.bind(this);
-						window.addEventListener('scroll', this._scrollListener);
-						// Set the initial values
-						root._inputscope[SCROLL_X] = _scrollX();
-						root._inputscope[SCROLL_Y] = _scrollY();
-					}
-					break;
-				case WINDOW_WIDTH:
-				case WINDOW_HEIGHT:
-					if(!this._hasObservers(NAMESPACE, WINDOW_WIDTH) && !this._hasObservers(NAMESPACE, WINDOW_HEIGHT)) {
-						this._resizeListener = _resizeListener.bind(this);
-						window.addEventListener('resize', this._resizeListener);
-						// Set the initial values
-						root._inputscope[WINDOW_WIDTH] = window.innerWidth;
-						root._inputscope[WINDOW_HEIGHT] = window.innerHeight;
-					}
-					break;
-			}
-		},
-		unobserve: function(key) {
-			switch(key) {
-				case CURSOR_X:
-				case CURSOR_Y:
-					if(!this._hasObservers(NAMESPACE, CURSOR_X) && !this._hasObservers(NAMESPACE, CURSOR_Y))
-						window.removeEventListener('mousemove', this._cursorListener);
-					break;
-				case SCROLL_X:
-				case SCROLL_Y:
-					if(!this._hasObservers(NAMESPACE, SCROLL_X) && !this._hasObservers(NAMESPACE, SCROLL_Y))
-						window.removeEventListener('scroll', this._scrollListener);
-					break;
-				case WINDOW_WIDTH:
-				case WINDOW_HEIGHT:
-					if(!this._hasObservers(NAMESPACE, WINDOW_WIDTH) && !this._hasObservers(NAMESPACE, WINDOW_HEIGHT))
-						window.removeEventListener('resize', this._resizeListener);
-					break;
-			}
-		},
-		getValue: function(key) {
-			return root._inputscope[key] || 0;
-		},
-		setValue: function(key, value) {
-			// Scroll to the specified key and let the event listeners invoke the observers
-			if(key === SCROLL_X)
-				window.scrollTo(_scrollXOffset(value), root._inputscope[SCROLL_Y]);
-			else if(key === SCROLL_Y)
-				window.scrollTo(root._inputscope[SCROLL_X], _scrollYOffset(value));
+Backbone.Cord.scopes[NAMESPACE] = {
+	observe: function(key) {
+		switch(key) {
+			case CURSOR_X:
+			case CURSOR_Y:
+				if(!this._hasObservers(NAMESPACE, CURSOR_X) && !this._hasObservers(NAMESPACE, CURSOR_Y)) {
+					this._cursorListener = _cursorListener.bind(this);
+					window.addEventListener('mousemove', this._cursorListener);
+				}
+				break;
+			case SCROLL_X:
+			case SCROLL_Y:
+				if(!this._hasObservers(NAMESPACE, SCROLL_X) && !this._hasObservers(NAMESPACE, SCROLL_Y)) {
+					this._scrollListener = _scrollListener.bind(this);
+					window.addEventListener('scroll', this._scrollListener);
+					// Set the initial values
+					root._inputscope[SCROLL_X] = _scrollX();
+					root._inputscope[SCROLL_Y] = _scrollY();
+				}
+				break;
+			case WINDOW_WIDTH:
+			case WINDOW_HEIGHT:
+				if(!this._hasObservers(NAMESPACE, WINDOW_WIDTH) && !this._hasObservers(NAMESPACE, WINDOW_HEIGHT)) {
+					this._resizeListener = _resizeListener.bind(this);
+					window.addEventListener('resize', this._resizeListener);
+					// Set the initial values
+					root._inputscope[WINDOW_WIDTH] = window.innerWidth;
+					root._inputscope[WINDOW_HEIGHT] = window.innerHeight;
+				}
+				break;
 		}
 	},
-	remove: function() {
+	unobserve: function(key) {
+		switch(key) {
+			case CURSOR_X:
+			case CURSOR_Y:
+				if(!this._hasObservers(NAMESPACE, CURSOR_X) && !this._hasObservers(NAMESPACE, CURSOR_Y))
+					window.removeEventListener('mousemove', this._cursorListener);
+				break;
+			case SCROLL_X:
+			case SCROLL_Y:
+				if(!this._hasObservers(NAMESPACE, SCROLL_X) && !this._hasObservers(NAMESPACE, SCROLL_Y))
+					window.removeEventListener('scroll', this._scrollListener);
+				break;
+			case WINDOW_WIDTH:
+			case WINDOW_HEIGHT:
+				if(!this._hasObservers(NAMESPACE, WINDOW_WIDTH) && !this._hasObservers(NAMESPACE, WINDOW_HEIGHT))
+					window.removeEventListener('resize', this._resizeListener);
+				break;
+		}
+	},
+	getValue: function(key) {
+		return root._inputscope[key] || 0;
+	},
+	setValue: function(key, value) {
+		// Scroll to the specified key and let the event listeners invoke the observers
+		if(key === SCROLL_X)
+			window.scrollTo(_scrollXOffset(value), root._inputscope[SCROLL_Y]);
+		else if(key === SCROLL_Y)
+			window.scrollTo(root._inputscope[SCROLL_X], _scrollYOffset(value));
+	},
+	stop: function() {
 		window.removeEventListener('mousemove', this._cursorListener);
 		window.removeEventListener('scroll', this._scrollListener);
 		window.removeEventListener('resize', this._scrollListener);
 	}
-});
+};
 
 })(((typeof self === 'object' && self.self === self && self) || (typeof global === 'object' && global.global === global && global)));
